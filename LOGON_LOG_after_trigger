@@ -1,0 +1,71 @@
+CREATE TABLE login_control
+( ID NUMBER PRIMARY KEY,
+osuser_name VARCHAR2(20),
+ip_address VARCHAR2(30));
+
+INSERT INTO login_control
+(ID, osuser_name, ip_address
+)
+VALUES (1, ‘HR’, NULL
+);
+
+INSERT INTO login_control
+(ID, osuser_name, ip_address
+)
+VALUES (2, NULL, ‘10.9.9.002’
+);
+
+INSERT INTO login_control
+(ID, osuser_name, ip_address
+)
+VALUES (3, NULL, ‘10.9.9.003’
+);
+
+INSERT INTO login_control
+(ID, osuser_name, ip_address
+)
+VALUES (4, NULL, ‘10.9.9.04’
+);
+
+INSERT INTO login_control
+(ID, osuser_name, ip_address
+)
+VALUES (5, ‘eko’, NULL
+);
+
+CREATE OR REPLACE TRIGGER HR.login_trg
+AFTER LOGON ON DATABASE
+DECLARE
+v_cnt_os        NUMBER        := 0;
+v_cnt_ip        NUMBER        := 0;
+v_os_username   VARCHAR2 (30);
+v_ipaddress     VARCHAR2 (30);
+BEGIN
+
+— gelen user’ın ip adresini aliyorum
+SELECT SYS_CONTEXT (‘userenv’, ‘ip_address’)
+INTO v_ipaddress
+FROM DUAL;
+— gelen user’ın os user name ini aliyorum
+SELECT SYS_CONTEXT (‘userenv’, ‘os_user’)
+INTO v_os_username
+FROM DUAL;
+
+SELECT COUNT (osuser_name)
+INTO v_cnt_os
+FROM login_control
+WHERE osuser_name = v_os_username;
+
+SELECT COUNT (ip_address)
+INTO v_cnt_ip
+FROM login_control
+WHERE osuser_name = v_ipaddress;
+
+IF v_cnt_ip = 0 AND v_cnt_os = 0
+THEN
+raise_application_error
+(-20001,
+‘Semaya baglanmak icin tanimli bir kullanici degilsiniz, lutfen veritabani yoneticiniz ile iletisime geciniz’
+);
+END IF;
+END;
